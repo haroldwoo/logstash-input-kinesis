@@ -45,7 +45,10 @@ class LogStash::Inputs::Kinesis::Worker
   end
 
   def process_record(record)
-    raw = @decoder.decode(record.getData).to_s
+    #raw = @decoder.decode(record.getData).to_s
+    is = com.fasterxml.jackson.databind.util::ByteBufferBackedInputStream.new(record.getData)
+    gzip = Java::java.util.zip::GZIPInputStream.new(is)
+    raw = gzip.to_io.read
     @codec.decode(raw) do |event|
       @decorator.call(event)
       @output_queue << event
